@@ -202,11 +202,24 @@ def extract_data(var):
     x = num
     print(f"box {i} put in coordinate ({x}, {y}, {z})")
 
-# Organizing boxes:
+print("Organizing boxes:")
 for i in range(len(boxes)):
     print(f"box {i} with size ({boxes[i].width}, {boxes[i].length}, {boxes[i].height}) and weight {boxes[i].weight} and nutrition score {boxes[i].value}")
 
+print()
+print("RESULT:")
 print("Max Nutrition: %g" % model.objVal)
 for v in model.getVars():
     if(int(v.x) == 1):
         extract_data(v.varName)
+
+# Organizing boxes:
+# box 0 with size (1, 1, 1) and weight 5 and nutrition score 99
+# box 1 with size (1, 1, 1) and weight 7 and nutrition score 30
+# box 2 with size (2, 2, 1) and weight 12 and nutrition score 3
+# box 3 with size (2, 2, 1) and weight 8 and nutrition score 70
+
+# RESULT:
+# Max Nutrition: 169
+# box 3 put in coordinate (0, 0, 0)
+# box 0 put in coordinate (0, 0, 1)
