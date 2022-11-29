@@ -1,14 +1,18 @@
 import gurobipy as gp
 from gurobipy import GRB
 from itertools import product
+import openpyxl 
 
+''' This code is used to test with small test case
+Note: The truck size should be changed to realistic size
+'''
 class Box:
     def __init__(self, width, length, height, weight, nutrition_value):
-        self.width = width
-        self.length = length
-        self.height = height
-        self.weight = weight
-        self.value = nutrition_value
+        self.width = int(width)
+        self.length = int(length)
+        self.height = int(height)
+        self.weight = int(weight)
+        self.value = int(nutrition_value)
 
 # get all combination of indices for avoid tons of for loops
 def get_index_comb(*args):
@@ -21,13 +25,25 @@ def get_index_comb(*args):
 
 # ============================== DATA ==============================
 # truck size
-truck_width = 10
-truck_length = 10
-truck_height = 10
-truck_weight_cap = 12600
+# truck_width = 10
+# truck_length = 18
+# truck_height = 13.5
+# truck_weight_cap = 20
+truck_width = 2
+truck_length = 2
+truck_height = 2
+truck_weight_cap = 20
 
 # boxes data
 boxes = []
+
+data_file = "./project_data.xlsx"
+wb = openpyxl.load_workbook(data_file)
+boxes_raw_data = list(wb['Nutrition data'].values)
+
+for i in range(1, len(boxes_raw_data)):
+    box_data = boxes_raw_data[i][1:]
+    boxes.append(Box(*box_data))
 
 # number of box
 num_box = len(boxes)
@@ -85,7 +101,14 @@ for i in range(num_box):
         sum += w[x, y, z, i]
     model.addConstr(sum <= 1)
 
-# Constrant 3: box i can only be put on top of a box j 
+# Constraint 3: Each coordination can only contain 1 box
+for x, y, z in get_index_comb(truck_width, truck_length, truck_height):
+    sum = 0
+    for i in get_index_comb(num_box):
+        sum += w[x, y, z, i]
+    model.addConstr(sum <= 1)
+
+# Constrant 4: box i can only be put on top of a box j 
 # if the width and length and weight of i are respectively less or equal to the width and length and weight of j
 for x, y in get_index_comb(truck_width, truck_length):
     for i, j in get_index_comb(num_box, num_box):
@@ -96,7 +119,7 @@ for x, y in get_index_comb(truck_width, truck_length):
             # z2 > z1
             model.addConstr(w[x, y, z2, i] + w[x, y, z1, j] <= 1)
 
-# Constrant 4: box i can only be put in front of a box j 
+# Constrant 5: box i can only be put in front of a box j 
 # if the height and length of i are respectively less or equal to the height and length of j
 # Note: only need to constraint on the first column (z = 0, y = 0)
 for i, j in get_index_comb(num_box, num_box):
@@ -108,7 +131,7 @@ for i, j in get_index_comb(num_box, num_box):
         model.addConstr(w[x2, 0, 0, i] + w[x1, 0, 0, j] <= 1)
 
 
-# Constrant 5: box i can only be put on right of a box j 
+# Constrant 6: box i can only be put on right of a box j 
 # if the width and height of i are respectively less or equal to the width and height of j
 # Note: only need to constraint on z = 0
 for x in get_index_comb(truck_width):
@@ -121,11 +144,43 @@ for x in get_index_comb(truck_width):
             model.addConstr(w[x, y2, 0, i] + w[x, y1, 0, j] <= 1)
 
 
-# Constraint 6: Total boxes weight should not exceed truck capacity
+# Constraint 7: Total boxes weight should not exceed truck capacity
 total_weight = 0
 for x, y, z, i in get_index_comb(truck_width, truck_length, truck_length, num_box):
     total_weight += w[x, y, z, i] * boxes[i].weight
 model.addConstr(total_weight <= truck_weight_cap)
+
+# Constraint 8: Put all boxes from left to right
+for x in get_index_comb(truck_width):
+    for y1, y2 in get_index_comb(truck_length, truck_length):
+        if y1 >= y2: continue
+        sum_1 = 0
+        sum_2 = 0
+        for i in get_index_comb(num_box):
+            sum_1 += w[x, y1, 0, i]
+            sum_2 += w[x, y2, 0, i]
+        model.addConstr(sum_1 >= sum_2)
+
+# Constraint 9: Put all boxes from back to front
+for x1, x2 in get_index_comb(truck_width, truck_width):
+    if x1 >= x2: continue
+    sum_1 = 0
+    sum_2 = 0
+    for i in get_index_comb(num_box):
+        sum_1 += w[x1, 0, 0, i]
+        sum_2 += w[x2, 0, 0, i]
+    model.addConstr(sum_1 >= sum_2)
+
+# Constraint 10: Put all boxes from bottom to top
+for x, y in get_index_comb(truck_width, truck_length):
+    for z1, z2 in get_index_comb(truck_height, truck_height):
+        if z1 >= z2: continue
+        sum_1 = 0
+        sum_2 = 0
+        for i in get_index_comb(num_box):
+            sum_1 += w[x, y, z1, i]
+            sum_2 += w[x, y, z2, i]
+        model.addConstr(sum_1 >= sum_2)
 
 # ============================== OBJECTIVE ==============================
 # Maximize the nutrition value delivered
@@ -136,5 +191,22 @@ model.setObjective(objective, GRB.MAXIMIZE)
 
 model.optimize()
 
+def extract_data(var):
+    num = int(var[2:len(var) - 1])
+    i = num % num_box
+    num //= num_box
+    z = num % truck_height
+    num //= truck_height
+    y = num % truck_length
+    num //= truck_length
+    x = num
+    print(f"box {i} put in coordinate ({x}, {y}, {z})")
+
+# Organizing boxes:
+for i in range(len(boxes)):
+    print(f"box {i} with size ({boxes[i].width}, {boxes[i].length}, {boxes[i].height}) and weight {boxes[i].weight} and nutrition score {boxes[i].value}")
+
+print("Max Nutrition: %g" % model.objVal)
 for v in model.getVars():
-	print(v.varName, int(v.x))
+    if(int(v.x) == 1):
+        extract_data(v.varName)
