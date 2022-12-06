@@ -81,7 +81,7 @@ for x in range(truck_width):
 width_sum = 0
 for x, i in get_index_comb(truck_width, num_box):
     width_sum += w[x, 0, 0, i] * boxes[i].width
-model.addConstr(width_sum <= truck_length)
+model.addConstr(width_sum <= truck_width)
 
 # fit in height (only care the same width and length)
 for x, y in get_index_comb(truck_width, truck_length):
