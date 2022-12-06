@@ -177,7 +177,7 @@ for x, y in get_index_comb(truck_width, truck_length):
             sum_2 += w[x, y, z2, i]
         model.addConstr(sum_1 >= sum_2)
 
-# Constraint 11: For each box, total weight of boxes above it do not exceed 2 times of its weight
+# Constraint 11: For each box, total weight of boxes above it do not exceed 3 times of its weight
 for x, y in get_index_comb(truck_width, truck_length):
     for z1 in get_index_comb(truck_height):
         w = 0
@@ -188,7 +188,7 @@ for x, y in get_index_comb(truck_width, truck_length):
         for z2, j in get_index_comb(truck_height, num_box):
             if z2 <= z1: continue
             sum += w[x, y, z2, j] * boxes[j].weight
-        model.addConstr(sum <= 2 * w)
+        model.addConstr(sum <= 3 * w)
 
 
 
