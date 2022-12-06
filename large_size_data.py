@@ -233,28 +233,3 @@ for v in model.getVars():
         boxes_put_weight += boxes[i].weight
 print(f"Can put {boxes_put} boxes out of {num_box}")
 print(f"Using {boxes_put_weight}lbs")
-
-# Organizing boxes:
-# box 0 with size (4.0, 3.0, 3.0) and weight 6.0 and nutrition score 89.0
-# box 1 with size (3.0, 4.0, 3.0) and weight 10.0 and nutrition score 31.0
-# box 2 with size (4.0, 3.0, 2.0) and weight 15.0 and nutrition score 25.0
-# box 3 with size (1.0, 1.0, 1.0) and weight 3.0 and nutrition score 20.0
-# box 4 with size (2.0, 2.0, 1.0) and weight 8.0 and nutrition score 52.0
-# box 5 with size (2.0, 1.0, 1.0) and weight 10.0 and nutrition score 51.0
-# box 6 with size (3.0, 2.0, 2.0) and weight 12.0 and nutrition score 55.0
-# box 7 with size (2.0, 3.0, 2.0) and weight 14.0 and nutrition score 79.0
-# box 8 with size (3.0, 3.0, 2.0) and weight 11.0 and nutrition score 57.0
-# box 9 with size (3.0, 3.0, 1.0) and weight 16.0 and nutrition score 46.0
-
-# RESULT:
-# Max Nutrition: 449
-# box 0 put in coordinate (0, 0, 0)
-# box 3 put in coordinate (0, 0, 1)
-# box 4 put in coordinate (0, 1, 0)
-# box 5 put in coordinate (0, 2, 0)
-# box 8 put in coordinate (1, 0, 0)
-# box 6 put in coordinate (1, 1, 0)
-# box 9 put in coordinate (1, 2, 0)
-# box 7 put in coordinate (2, 0, 0)
-# Can put 8 boxes out of 10
-# Using 80.0lbs
