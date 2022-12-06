@@ -8,11 +8,11 @@ Note: The truck size should be changed to realistic size
 '''
 class Box:
     def __init__(self, width, length, height, weight, nutrition_value):
-        self.width = int(width)
-        self.length = int(length)
-        self.height = int(height)
-        self.weight = int(weight)
-        self.value = int(nutrition_value)
+        self.width = float(width)
+        self.length = float(length)
+        self.height = float(height)
+        self.weight = float(weight)
+        self.value = float(nutrition_value)
 
 # get all combination of indices for avoid tons of for loops
 def get_index_comb(*args):
@@ -21,13 +21,15 @@ def get_index_comb(*args):
     l = []
     for arg in args:
         l.append([i for i in range(arg)])
+    if len(l) == 1:
+        return l[0]
     return get_combination(*l)
 
 # ============================== DATA ==============================
 truck_width = 5
 truck_length = 9
 truck_height = 7
-truck_weight_cap = 30
+truck_weight_cap = 80
 
 # boxes data
 boxes = []
@@ -141,7 +143,7 @@ for x in get_index_comb(truck_width):
 
 # Constraint 7: Total boxes weight should not exceed truck capacity
 total_weight = 0
-for x, y, z, i in get_index_comb(truck_width, truck_length, truck_length, num_box):
+for x, y, z, i in get_index_comb(truck_width, truck_length, truck_height, num_box):
     total_weight += w[x, y, z, i] * boxes[i].weight
 model.addConstr(total_weight <= truck_weight_cap)
 
@@ -180,15 +182,16 @@ for x, y in get_index_comb(truck_width, truck_length):
 # Constraint 11: For each box, total weight of boxes above it do not exceed 3 times of its weight
 for x, y in get_index_comb(truck_width, truck_length):
     for z1 in get_index_comb(truck_height):
-        w = 0
+        box_weight = 0
         for i in get_index_comb(num_box):
-            w += w[x, y, z1, i] * boxes[i].weight
+            print(x, y, z1, i, flush=True)
+            box_weight += w[x, y, z1, i] * boxes[i].weight
 
         sum = 0
         for z2, j in get_index_comb(truck_height, num_box):
             if z2 <= z1: continue
             sum += w[x, y, z2, j] * boxes[j].weight
-        model.addConstr(sum <= 3 * w)
+        model.addConstr(sum <= 3 * box_weight)
 
 
 
@@ -211,6 +214,7 @@ def extract_data(var):
     num //= truck_length
     x = num
     print(f"box {i} put in coordinate ({x}, {y}, {z})")
+    return i
 
 print("Organizing boxes:")
 for i in range(len(boxes)):
@@ -219,17 +223,37 @@ for i in range(len(boxes)):
 print()
 print("RESULT:")
 print("Max Nutrition: %g" % model.objVal)
+boxes_put = 0
+boxes_put_weight = 0
 for v in model.getVars():
     if(int(v.x) == 1):
-        extract_data(v.varName)
+        boxes_put += 1
+        i = extract_data(v.varName)
+        boxes_put_weight += boxes[i].weight
+print(f"Can put {boxes_put} boxes out of {num_box}")
+print(f"Using {boxes_put_weight}lbs")
 
 # Organizing boxes:
-# box 0 with size (1, 1, 1) and weight 5 and nutrition score 99
-# box 1 with size (1, 1, 1) and weight 7 and nutrition score 30
-# box 2 with size (2, 2, 1) and weight 12 and nutrition score 3
-# box 3 with size (2, 2, 1) and weight 8 and nutrition score 70
+# box 0 with size (4.0, 3.0, 3.0) and weight 6.0 and nutrition score 89.0
+# box 1 with size (3.0, 4.0, 3.0) and weight 10.0 and nutrition score 31.0
+# box 2 with size (4.0, 3.0, 2.0) and weight 15.0 and nutrition score 25.0
+# box 3 with size (1.0, 1.0, 1.0) and weight 3.0 and nutrition score 20.0
+# box 4 with size (2.0, 2.0, 1.0) and weight 8.0 and nutrition score 52.0
+# box 5 with size (2.0, 1.0, 1.0) and weight 10.0 and nutrition score 51.0
+# box 6 with size (3.0, 2.0, 2.0) and weight 12.0 and nutrition score 55.0
+# box 7 with size (2.0, 3.0, 2.0) and weight 14.0 and nutrition score 79.0
+# box 8 with size (3.0, 3.0, 2.0) and weight 11.0 and nutrition score 57.0
+# box 9 with size (3.0, 3.0, 1.0) and weight 16.0 and nutrition score 46.0
 
 # RESULT:
-# Max Nutrition: 169
-# box 3 put in coordinate (0, 0, 0)
-# box 0 put in coordinate (0, 0, 1)
+# Max Nutrition: 449
+# box 0 put in coordinate (0, 0, 0)
+# box 3 put in coordinate (0, 0, 1)
+# box 4 put in coordinate (0, 1, 0)
+# box 5 put in coordinate (0, 2, 0)
+# box 8 put in coordinate (1, 0, 0)
+# box 6 put in coordinate (1, 1, 0)
+# box 9 put in coordinate (1, 2, 0)
+# box 7 put in coordinate (2, 0, 0)
+# Can put 8 boxes out of 10
+# Using 80.0lbs
