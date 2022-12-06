@@ -27,8 +27,8 @@ def get_index_comb(*args):
 
 # ============================== DATA ==============================
 truck_width = 10
-truck_length = 18
-truck_height = 14
+truck_length = 16
+truck_height = 13
 truck_weight_cap = 12800
 
 # boxes data
@@ -200,6 +200,8 @@ objective = 0
 for x, y, z, i in get_index_comb(truck_width, truck_length, truck_height, num_box):
     objective += w[x, y, z, i] * boxes[i].value
 model.setObjective(objective, GRB.MAXIMIZE)
+
+print("start running model")
 
 model.optimize()
 
