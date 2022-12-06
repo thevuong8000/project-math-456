@@ -184,7 +184,6 @@ for x, y in get_index_comb(truck_width, truck_length):
     for z1 in get_index_comb(truck_height):
         box_weight = 0
         for i in get_index_comb(num_box):
-            print(x, y, z1, i, flush=True)
             box_weight += w[x, y, z1, i] * boxes[i].weight
 
         sum = 0

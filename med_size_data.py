@@ -81,7 +81,7 @@ for x in range(truck_width):
 width_sum = 0
 for x, i in get_index_comb(truck_width, num_box):
     width_sum += w[x, 0, 0, i] * boxes[i].width
-model.addConstr(width_sum <= truck_length)
+model.addConstr(width_sum <= truck_width)
 
 # fit in height (only care the same width and length)
 for x, y in get_index_comb(truck_width, truck_length):
@@ -246,14 +246,13 @@ print(f"Using {boxes_put_weight}lbs")
 # box 9 with size (3.0, 3.0, 1.0) and weight 16.0 and nutrition score 46.0
 
 # RESULT:
-# Max Nutrition: 449
+# Max Nutrition: 399
 # box 0 put in coordinate (0, 0, 0)
-# box 3 put in coordinate (0, 0, 1)
-# box 4 put in coordinate (0, 1, 0)
-# box 5 put in coordinate (0, 2, 0)
-# box 8 put in coordinate (1, 0, 0)
-# box 6 put in coordinate (1, 1, 0)
-# box 9 put in coordinate (1, 2, 0)
-# box 7 put in coordinate (2, 0, 0)
-# Can put 8 boxes out of 10
+# box 2 put in coordinate (0, 1, 0)
+# box 8 put in coordinate (0, 1, 1)
+# box 4 put in coordinate (0, 1, 2)
+# box 9 put in coordinate (0, 2, 0)
+# box 7 put in coordinate (0, 2, 1)
+# box 5 put in coordinate (0, 2, 2)
+# Can put 7 boxes out of 10
 # Using 80.0lbs
